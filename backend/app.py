@@ -1,22 +1,31 @@
 from flask import Flask, jsonify, request, make_response
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
+from bson import json_util
 from bson.objectid import ObjectId
+from dotenv import load_dotenv
 import json
+import os
 
 app = Flask(__name__)
+
+load_dotenv()
 
 #INDICATES ABILITY TO CONNECT TO DATABASE, THROWS ERROR OTHERWISE
 try:
     app = Flask(__name__)
     cors = CORS(app)
-    # mongodb_client = PyMongo(app, uri="mongodb://localhost:27017/trivia_bank")
-    app.config["MONGO_URI"] = "mongodb://localhost:27017/trivia_bank"
+    backend_url = os.getenv("MONGO_BACKEND")    
+    # mongodb_client = PyMongo(app, uri=f"{backend_url}")
+    print(f"{backend_url}")
+    app.config["MONGO_URI"] = f"{backend_url}"
+    # app.config["MONGO_URI"] = "mongodb://localhost:27017/trivia_bank"
     app.config["CORS_HEADERS"] = "Content-Type"
     mongo = PyMongo(app)
     db = mongo.db
-except:
-        print("ERROR- cannot connect to db")
+    print(f'this is the db {db}')
+except Exception as e:
+        print("ERROR- cannot connect to db", e)
 
 #LOGIN ROUTE
 @app.route("/login", methods= ["GET", "POST"])
@@ -65,7 +74,8 @@ def register():
         "password": password
     }
     )
-    db.users.insert_one(new_user)
+    response = db.users.insert_one(new_user)
+    new_user['_id'] = str(response.inserted_id)
     return jsonify(new_user)
             
 #GET ALL QUIZ SETS ROUTE
@@ -129,7 +139,7 @@ def populateDb():
         raise ValueError(e)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
 
 
 
