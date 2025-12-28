@@ -1,4 +1,4 @@
-const URI = "https://trivia-app-backend.vercel.app/";
+const URI = "https://trivia-app-backend.vercel.app";
 
 export const UserApi = {
 
